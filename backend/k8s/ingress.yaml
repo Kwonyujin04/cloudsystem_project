@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: emotion-ingress
+spec:
+  rules:
+    - host: emotion.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: { name: emotion-frontend, port: { number: 80 } } # 프론트엔드 서비스 이름과 포트
+          - path: /api # 백엔드 API 경로
+            pathType: Prefix
+            backend:
+              service: { name: emotion-backend, port: { number: 80 } }
