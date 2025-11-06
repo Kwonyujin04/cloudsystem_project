@@ -1,0 +1,63 @@
+# backend.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: emotion-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: emotion-backend
+  template:
+    metadata:
+      labels:
+        app: emotion-backend
+    spec:
+      containers:
+        - name: app
+          image: yourrepo/emotion-backend:latest # 실제 이미지 경로로 변경
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: k8s
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: password
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 8
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          # (선택) DB가 먼저 준비될 때까지 재시도/백오프 시간을 늘리고 싶으면 아래처럼 시작 지연도 가능
+          # startupProbe:
+          #   httpGet:
+          #     path: /actuator/health
+          #     port: 8080
+          #   failureThreshold: 30
+          #   periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: emotion-backend
+spec:
+  selector:
+    app: emotion-backend
+  ports:
+    - port: 8080
+      targetPort: 8080
