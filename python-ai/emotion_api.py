@@ -10,6 +10,11 @@ classifier = pipeline("text-classification", model="dlckdfuf141/korean-emotion-k
 class DiaryText(BaseModel):
     text: str
 
+class Emotion(BaseModel):
+    label: str
+    score: float
+    intensity: list
+
 @app.post("/analyze")
 def analyze(diary: DiaryText):
     result = classifier(diary.text)[0]
