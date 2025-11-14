@@ -1,0 +1,33 @@
+# frontend-deploy.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moodtracker-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: moodtracker-frontend
+  template:
+    metadata:
+      labels:
+        app: moodtracker-frontend
+    spec:
+      containers:
+        - name: moodtracker-frontend
+          # TODO: 이미지 이름 변경 필요
+          image: your-dockerhub-id/moodtracker-frontend:latest
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: moodtracker-frontend-svc
+spec:
+  selector:
+    app: moodtracker-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
