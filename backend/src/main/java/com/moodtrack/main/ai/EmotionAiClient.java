@@ -23,6 +23,9 @@ public class EmotionAiClient {
     @Value("${python.url}")
     private String pythonUrl;
 
+    /**
+     * 감정 분석 호출 (/analyze)
+     */
     public EmotionResult analyze(String text) {
         String url = pythonUrl + "/analyze";
 
@@ -41,10 +44,36 @@ public class EmotionAiClient {
         }
     }
 
+    /**
+     * 요약 호출 (/summarize)
+     */
+    public SummaryResult summarize(String text) {
+        String url = pythonUrl + "/summarize";
+
+        Map<String, String> request = new HashMap<>();
+        request.put("text", text);
+
+        try {
+            ResponseEntity<SummaryResult> response =
+                    restTemplate.postForEntity(url, request, SummaryResult.class);
+
+            return response.getBody();
+
+        } catch (Exception e) {
+            log.error("Python 요약 실패", e);
+            throw new AppException(ErrorCode.HF_API_ERROR, "요약 서버 호출 실패");
+        }
+    }
+
     @Data
     public static class EmotionResult {
         private String label;
         private double score;
+        private int intensity;
+    }
+
+    @Data
+    public static class SummaryResult {
+        private String summary;
     }
 }
-

@@ -45,6 +45,8 @@ public class DiaryService {
                 .content(diary.getContent())
                 .label(diary.getLabel())
                 .score(diary.getScore())
+                .intensity(diary.getIntensity())
+                .summary(diary.getSummary())
                 .createdAt(diary.getCreatedAt())
                 .build());
     }
@@ -95,31 +97,38 @@ public class DiaryService {
                 .build();
     }
 
-    // 감정 분석 및 일기 제출
+    // 감정 분석 및 요약 후 일기 제출
     @Transactional
     public DiarySubmitResponse submitDiary(User user, String content) {
 
         // 1) 파이썬 감정 분석 API 호출
-        var result = emotionAiClient.analyze(content);
-        // 감정 라벨 한글로 변환
-        String emotionLabel = EMOTION_MAP.getOrDefault(result.getLabel(), "정보 없음");
+        var emotionResult = emotionAiClient.analyze(content);
+        String emotionLabel = EMOTION_MAP.getOrDefault(emotionResult.getLabel(), "정보 없음");
 
-        // 2) 일기 DB에 저장
+        // 2) 파이썬 요약 API 호출
+        var summaryResult = emotionAiClient.summarize(content);
+        String summaryText = summaryResult.getSummary();
+
+        // 3) 일기 DB에 저장
         Diary diary = Diary.builder()
                 .user(user)
                 .content(content)
+                .summary(summaryText)
                 .label(emotionLabel)
-                .score(result.getScore())
+                .score(emotionResult.getScore())
+                .intensity(emotionResult.getIntensity())
                 .createdAt(LocalDateTime.now())
                 .build();
 
         diaryRepository.save(diary);
 
-        // 3) 클라이언트에 분석 결과 반환
+        // 4) 클라이언트에 분석 결과 + 요약 반환
         return DiarySubmitResponse.builder()
                 .diaryId(diary.getId())
                 .label(emotionLabel)
-                .score(result.getScore())
+                .score(emotionResult.getScore())
+                .intensity(emotionResult.getIntensity())
+                .summary(summaryText)
                 .build();
     }
 }

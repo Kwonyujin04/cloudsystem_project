@@ -35,6 +35,12 @@ public class Diary {
     @Column(name = "score")
     private Double score;
 
+    @Column(name = "intensity")
+    private Integer intensity;
+
+    @Column(name = "summary", columnDefinition = "text")
+    private String summary;
+
     // 연관관계 편의 메서드
     public void setUser(User user) {
         this.user = user;

@@ -17,15 +17,7 @@ public class DiaryItemResponse {
     private String content;
     private String label;
     private Double score;
+    private Integer intensity;
+    private String summary;
     private LocalDateTime createdAt;
-
-    public static DiaryItemResponse from(Diary diary) {
-        DiaryItemResponse res = new DiaryItemResponse();
-        res.setId(diary.getId());
-        res.setContent(diary.getContent());
-        res.setLabel(diary.getLabel());
-        res.setScore(diary.getScore());
-        res.setCreatedAt(diary.getCreatedAt());
-        return res;
-    }
 }

@@ -63,6 +63,7 @@ public class DiaryController {
         return ApiResponse.ok(diaryService.getMonthlyStats(user), "최근 30일간 감정 통계 조회에 성공했습니다.");
     }
 
+    // 일기 감정 분석 및 요약
     @PostMapping("/submit")
     @ResponseStatus(HttpStatus.CREATED)
     public DiarySubmitResponse submitDiary(HttpServletRequest request,
