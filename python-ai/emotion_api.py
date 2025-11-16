@@ -1,25 +1,78 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from transformers import pipeline
+import torch
+from transformers import (
+    BartForConditionalGeneration,
+    PreTrainedTokenizerFast,
+    pipeline
+)
 
 app = FastAPI()
 
-# HuggingFace model 로딩 (한 번만)
-classifier = pipeline("text-classification", model="dlckdfuf141/korean-emotion-kluebert-v2")
+# ====== 1. 요약 모델 로딩 ======
+summary_tokenizer = PreTrainedTokenizerFast.from_pretrained("gogamza/kobart-base-v2")
+summary_model = BartForConditionalGeneration.from_pretrained("gogamza/kobart-base-v2")
 
-class DiaryText(BaseModel):
+# ====== 2. 감정 분석 모델 로딩 ======
+emotion_classifier = pipeline(
+    "text-classification",
+    model="dlckdfuf141/korean-emotion-kluebert-v2"
+)
+
+# ====== 공통 요청 모델 ======
+class TextRequest(BaseModel):
     text: str
 
-class Emotion(BaseModel):
+# ====== 응답 모델 ======
+class SummaryResponse(BaseModel):
+    summary: str
+
+class EmotionResponse(BaseModel):
     label: str
     score: float
-    intensity: list
+    intensity: int   # 퍼센트 값 (0~100)
 
-@app.post("/analyze")
-def analyze(diary: DiaryText):
-    result = classifier(diary.text)[0]
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)
+
+
+# ====== /summarize 엔드포인트 ======
+@app.post("/summarize", response_model=SummaryResponse)
+def summarize(input: TextRequest):
+    input_text = input.text
+
+    # 입력 텍스트 인코딩
+    input_ids = summary_tokenizer.encode(input_text, return_tensors="pt")
+
+    # 요약 생성
+    output_ids = summary_model.generate(
+        input_ids,
+        max_length=150,            # 요약 최대 길이
+        min_length=30,             # 요약 최소 길이
+        num_beams=5,               # beam search 크기
+        repetition_penalty=2.0,
+        no_repeat_ngram_size=3,
+        eos_token_id=1,
+        bad_words_ids=[[summary_tokenizer.unk_token_id]],
+    )
+
+    # 디코딩
+    output_text = summary_tokenizer.decode(
+        output_ids.squeeze().tolist(),
+        skip_special_tokens=True
+    )
+
+    return {"summary": output_text}
+
+
+# ====== /analyze 엔드포인트 ======
+@app.post("/analyze", response_model=EmotionResponse)
+def analyze(diary: TextRequest):
+    result = emotion_classifier(diary.text)[0]
+
     return {
-        "label": result["label"],
+        "label": str(result["label"]),
         "score": result["score"],
-        "intensity": round(result["score"] * 100)
+        "intensity": round(result["score"] * 100),  # 점수를 %로 변환
     }
