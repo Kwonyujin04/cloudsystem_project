@@ -27,6 +27,6 @@ spec:
     spec:
       containers:
         - name: python-ml
-          image: 2with13/cloud-python-ml:latest
+          image: 2with13/cloud-python-ml:1.0.1
           ports:
             - containerPort: 8000
