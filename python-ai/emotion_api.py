@@ -100,13 +100,18 @@ def extract_keywords(input: TextRequest):
     # KeyBERT를 사용하여 키워드 추출
     keywords_with_scores = keyword_model.extract_keywords(
         docs=diary_text, 
-        keyphrase_ngram_range=(1, 3), 
+        keyphrase_ngram_range=(1, 4), 
         stop_words=None, 
-        top_n=5,
+        top_n=20,
+        use_mmr=True,
+        diversity=0.5
     )
     
     # (키워드, 점수)에서 키워드만 추출
-    keywords = [keyword for keyword, score in keywords_with_scores]
+    keywords = [
+        KeywordItem(keyword=keyword, relevance_score=score) 
+        for keyword, score in keywords_with_scores
+    ]
     
     return {
         "keywords": keywords
