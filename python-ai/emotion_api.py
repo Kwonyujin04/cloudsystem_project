@@ -6,6 +6,10 @@ from transformers import (
     PreTrainedTokenizerFast,
     pipeline
 )
+from keybert import KeyBERT
+from sentence_transformers import SentenceTransformer
+
+warnings.filterwarnings('ignore', category=UserWarning)
 
 app = FastAPI()
 
@@ -19,6 +23,13 @@ emotion_classifier = pipeline(
     model="dlckdfuf141/korean-emotion-kluebert-v2"
 )
 
+#keyword 모델
+embed_model_id = "skt/kobert-base-v1" 
+
+embedding_model = SentenceTransformer(embed_model_id)
+keyword_model = KeyBERT(model=embedding_model)
+
+
 # ====== 공통 요청 모델 ======
 class TextRequest(BaseModel):
     text: str
@@ -31,6 +42,9 @@ class EmotionResponse(BaseModel):
     label: str
     score: float
     intensity: int   # 퍼센트 값 (0~100)
+
+class KeywordResponse(BaseModel):
+    keywords: list[str] # 추출된 키워드 목록
 
 if __name__ == "__main__":
     import uvicorn
@@ -75,4 +89,25 @@ def analyze(diary: TextRequest):
         "label": str(result["label"]),
         "score": result["score"],
         "intensity": round(result["score"] * 100),  # 점수를 %로 변환
+    }
+
+#키워드 엔드포인트
+@app.post("/extract_keywords", response_model=KeywordResponse)
+def extract_keywords(input: TextRequest):
+
+    diary_text = input.text
+    
+    # KeyBERT를 사용하여 키워드 추출
+    keywords_with_scores = keyword_model.extract_keywords(
+        docs=diary_text, 
+        keyphrase_ngram_range=(1, 3), 
+        stop_words=None, 
+        top_n=5,
+    )
+    
+    # (키워드, 점수)에서 키워드만 추출
+    keywords = [keyword for keyword, score in keywords_with_scores]
+    
+    return {
+        "keywords": keywords
     }
