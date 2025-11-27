@@ -3,3 +3,6 @@ uvicorn
 transformers
 torch
 pydantic
+keybert
+tiktoken
+protobuf
