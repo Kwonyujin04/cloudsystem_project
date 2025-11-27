@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: spring-backend
-          image: 2with13/cloud-backend:1.0.1
+          image: 2with13/cloud-backend:1.0.5
           ports:
             - containerPort: 8080
           env:
