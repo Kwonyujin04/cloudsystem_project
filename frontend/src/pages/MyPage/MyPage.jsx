@@ -1,10 +1,11 @@
-// src/pages/MyPage.jsx
+// src/pages/MyPage/MyPage.jsx
 import { useState } from "react";
-import Header from "../components/Header";
-import MyPageField from "../components/MypageField";
-import EmotionGraph from "../components/EmotionGraph";
-import ProfileImage from "../components/ProfileImage";
-import SwitchButton from "../components/SwitchButton";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+import MyPageField from ".//MypageField";
+import EmotionGraph from ".//EmotionGraph";
+import ProfileImage from ".//ProfileImage";
+import SwitchButton from ".//SwitchButton";
 import { AnimatePresence, motion } from "framer-motion";
 
 export default function MyPage() {
@@ -92,9 +93,7 @@ export default function MyPage() {
                 </AnimatePresence>
 
             </div>
-            <footer className="text-center text-xs text-gray-500 pt-6 pb-4">
-                Cloud System 2025 Project · Team 1
-            </footer>
+            <Footer />
         </div >
     );
 }
