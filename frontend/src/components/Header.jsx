@@ -1,6 +1,7 @@
 // src/components/Header.jsx
 
 import { useState } from "react";
+import logo from "../assets/logo.png";
 
 export default function Header() {
     const [open, setOpen] = useState(false);
@@ -14,13 +15,14 @@ export default function Header() {
                 <div className="w-full px-4 md:px-8 h-20 flex items-center justify-between">
 
                     {/* Logo */}
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-green-500 rounded-sm" />
+                    <img src={logo} alt="logo.png" className="w-10 h-10 md:w-12 md:h-10" />
 
                     {/* 데스크탑 메뉴 */}
                     <nav className="hidden md:flex space-x-6 text-gray-700 font-medium">
                         <a href="/" className="hover:text-black">홈</a>
                         <a href="/mypage" className="hover:text-black">마이페이지</a>
-                        <a href="/analysis" className="hover:text-black">분석페이지</a>
+                        <a href="/diary" className="hover:text-black">일기작성</a>
+                        <a href="/login" className="hover:text-black">로그인</a>
                     </nav>
 
                     {/* 모바일 햄버거 버튼 */}
@@ -63,7 +65,8 @@ export default function Header() {
                     <nav className="space-y-4 text-gray-700 font-medium">
                         <a href="/" className="block hover:text-black">홈</a>
                         <a href="/mypage" className="block hover:text-black">마이페이지</a>
-                        <a href="/analysis" className="block hover:text-black">분석페이지</a>
+                        <a href="/diary" className="block hover:text-black">일기작성</a>
+                        <a href="/login" className="block hover:text-black">로그인</a>
                     </nav>
                 </div>
             </div>
