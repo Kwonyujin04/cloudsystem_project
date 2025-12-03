@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "react-datepicker/dist/react-datepicker.css";
 
 import MyPage from "./pages/MyPage/MyPage";
@@ -12,6 +12,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/find-id" element={<FindIdPage />} />
         <Route path="/find-pw" element={<FindPwPage />} />
