@@ -4,11 +4,13 @@ metadata:
   name: spring-backend
   namespace: moodtracker
 spec:
+  type: NodePort
   selector:
     app: spring-backend
   ports:
     - port: 8080
       targetPort: 8080
+      nodePort: 30081
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -27,7 +29,7 @@ spec:
     spec:
       containers:
         - name: spring-backend
-          image: 2with13/cloud-backend:1.0.5
+          image: 2with13/cloud-backend:1.0.6
           ports:
             - containerPort: 8080
           env:

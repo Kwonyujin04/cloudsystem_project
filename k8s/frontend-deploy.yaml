@@ -17,7 +17,7 @@ spec:
       containers:
         - name: react-frontend
           # TODO: 이미지 이름 변경 필요
-          image: your-dockerhub-id/moodtracker-frontend:latest
+          image: 2with13/test:1.0.2
           ports:
             - containerPort: 80
 ---
@@ -29,8 +29,8 @@ metadata:
 spec:
   selector:
     app: react-frontend
+  type: NodePort
   ports:
-    - protocol: TCP
-      port: 80
+    - port: 80
       targetPort: 80
-  type: ClusterIP
+      nodePort: 30080
