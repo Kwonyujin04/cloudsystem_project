@@ -7,23 +7,25 @@ export default function EmotionDonutChart({ data }) {
         return <div>아직 기록된 감정이 없습니다.</div>;
     }
 
-    const COLORS = ["#f8ec7eff", "#8ac3f6ff", "#f05d5dff", "#a0e0a6ff"];
+    const COLORS = ["#edb066", "#86b3d3", "#f4727d", "#a0e792"];
 
     return (
         <PieChart width={300} height={300}>
             <defs>
                 <filter id="shadow" x="-30%" y="-30%" width="200%" height="200%">
-                    <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#000" floodOpacity="0.3" />
+                    <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#000" floodOpacity="0.2" />
                 </filter>
             </defs>
+            <circle cx={150} cy={150} r={120} fill="#ffffffff" />
 
             <Pie
                 data={data}
-                cx={150}
-                cy={150}
+                cx={145}
+                cy={145}
                 innerRadius={70}
                 outerRadius={110}
                 dataKey="value"
+                stroke="none"
             >
                 {data.map((entry, index) => (
                     <Cell
