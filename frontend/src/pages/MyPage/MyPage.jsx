@@ -7,7 +7,6 @@ import EmotionGraph from ".//EmotionGraph";
 import ProfileImage from ".//ProfileImage";
 import SwitchButton from ".//SwitchButton";
 import AnalysisResult from "../AnalysisPage/AnalysisResult";
-import RecordPlayer from "../AnalysisPage/RecordPlayer";
 import EmotionCalendar from "../../components/EmotionCalendar";
 import { AnimatePresence, motion } from "framer-motion";
 import "react-datepicker/dist/react-datepicker.css";
@@ -21,7 +20,7 @@ export default function MyPage() {
             date: "2025-12-01",
             diaryText: "오늘은 기쁘고 즐거운 하루였다.",
             analysis: "전반적으로 긍정적인 정서가 강하게 나타난 하루였습니다.",
-            keyword: ["기쁘다", "즐겁다", "맛있다"],
+            keywords: ["기쁘다", "즐겁다", "맛있다"],
             emotion: "joy",
             music: {
                 title: "Happy Vibes",
@@ -33,7 +32,7 @@ export default function MyPage() {
             date: "2025-12-02",
             diaryText: "날씨가 흐려서 조금 우울했다.",
             analysis: "날씨로 인해 기분이 다소 가라앉았지만 회복 가능성이 보입니다.",
-            keyword: ["우울하다", "조용하다"],
+            keywords: ["우울하다", "조용하다"],
             emotion: "sad",
             music: {
                 title: "Rainy Day Mood",
@@ -103,6 +102,7 @@ export default function MyPage() {
                                         analysis={selectedDiary.analysis}
                                         emotion={selectedDiary.emotion}  // "기쁨" / "슬픔" / "보통" / "화남"
                                         music={selectedDiary.music}
+                                        keywords={selectedDiary.keywords}
                                     />
                                 </motion.div>
                             ) : (

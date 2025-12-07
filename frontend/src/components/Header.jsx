@@ -15,7 +15,7 @@ export default function Header() {
                 <div className="w-full px-4 my:px-2 md:px-8 h-20 flex items-center justify-between">
 
                     {/* Logo */}
-                    <img src={logo} alt="logo.png" className="w-10 h-10 md:w-12 md:h-10"
+                    <img src={logo} alt="logo.png" className="w-10 h-10 md:w-11 md:h-10"
                         onClick={() => window.open("/")} />
 
                     {/* 데스크탑 메뉴 */}

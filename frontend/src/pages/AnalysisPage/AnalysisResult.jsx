@@ -3,7 +3,7 @@
 import RecordPlayer from ".//RecordPlayer";
 import { useState } from "react";
 
-export default function AnalysisResult({ diaryText, emotion, analysis, music }) {
+export default function AnalysisResult({ diaryText, emotion, analysis, music, keywords }) {
 
     const [showDiary, setShowDiary] = useState(false);
     const [showAnalysis, setShowAnalysis] = useState(false);
@@ -12,6 +12,9 @@ export default function AnalysisResult({ diaryText, emotion, analysis, music }) 
 
     const shorten = (text) =>
         text && text.length > MAX_LENGTH ? text.substring(0, MAX_LENGTH) + "..." : text;
+
+    const keywordText =
+        Array.isArray(keywords) ? keywords.join(", ") : (keywords || "");
 
     return (
         <div className="w-full max-w-md mx-auto bg-white p-6 rounded-xl shadow space-y-6">
@@ -54,6 +57,16 @@ export default function AnalysisResult({ diaryText, emotion, analysis, music }) 
                     </button>
                 )}
             </div>
+
+            {/* 키워드 영역 */}
+            {keywordText && (
+                <div>
+                    <label className="block text-lg font-semibold">키워드</label>
+                    <div className="mt-2 p-3 rounded-lg bg-gray-50 text-gray-700 text-sm">
+                        키워드: {keywordText}
+                    </div>
+                </div>
+            )}
 
             {/* 감정 */}
             <div>
