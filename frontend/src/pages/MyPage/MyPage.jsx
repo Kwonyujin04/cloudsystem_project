@@ -1,5 +1,6 @@
 // src/pages/MyPage/MyPage.jsx
 import { useState } from "react";
+import { useEffect } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import MyPageField from ".//MypageField";
@@ -7,53 +8,91 @@ import EmotionGraph from ".//EmotionGraph";
 import ProfileImage from ".//ProfileImage";
 import SwitchButton from ".//SwitchButton";
 import AnalysisResult from "../AnalysisPage/AnalysisResult";
-import RecordPlayer from "../AnalysisPage/RecordPlayer";
 import EmotionCalendar from "../../components/EmotionCalendar";
+import Neutral from "../../assets/neutral.png";
 import { AnimatePresence, motion } from "framer-motion";
 import "react-datepicker/dist/react-datepicker.css";
+import api from "../../utils/axiosInstance";
+
+function normalizeDiaryFromServer(item) {
+    const date = item.createdAt
+        ? String(item.createdAt).split("T")[0]
+        : "";
+
+    const diaryText = item.content || ""; // Diary.content
+    const analysis = item.summary || ""; // Diary.summary
+    const emotion = item.label || "중립"; // Diary.label (감정 레이블)
+    const keywords = Array.isArray(item.keywords) ? item.keywords : [];
+
+    const music = {
+        title: "오늘의 기분에 맞는 음악",
+        url: "",
+        coverUrl:
+            "https://i.scdn.co/image/ab67616d0000b273e6cfbd918066c7f684bb6a53",
+    };
+
+    if (Array.isArray(item.musicList) && item.musicList.length > 0) {
+        const m = item.musicList[0];
+
+        music = {
+            title: m.trackTitle
+                ? `${m.artist ?? ""} - ${m.trackTitle}`
+                : "오늘의 기분에 맞는 음악",
+            url: m.spotifyUrl ?? "",
+            coverUrl:
+                m.coverUrl ??
+                "https://i.scdn.co/image/ab67616d0000b273e6cfbd918066c7f684bb6a53",
+        };
+    }
+
+    return {
+        id: item.id,
+        date, // "yyyy-MM-dd"
+        diaryText,
+        analysis,
+        emotion,
+        keywords,
+        music,
+    };
+}
 
 export default function MyPage() {
+    const [isGraphMode, setIsGraphMode] = useState(false);
+    const [diaries, setDiaries] = useState([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
-    const [isOn, setIsOn] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const diaries = [
-        {
-            date: "2025-12-01",
-            diaryText: "오늘은 기쁘고 즐거운 하루였다.",
-            analysis: "전반적으로 긍정적인 정서가 강하게 나타난 하루였습니다.",
-            keyword: ["기쁘다", "즐겁다", "맛있다"],
-            emotion: "joy",
-            music: {
-                title: "Happy Vibes",
-                url: "https://example.com/happy",
-                coverUrl: "https://via.placeholder.com/300x300.png?text=Happy",
-            },
-        },
-        {
-            date: "2025-12-02",
-            diaryText: "날씨가 흐려서 조금 우울했다.",
-            analysis: "날씨로 인해 기분이 다소 가라앉았지만 회복 가능성이 보입니다.",
-            keyword: ["우울하다", "조용하다"],
-            emotion: "sad",
-            music: {
-                title: "Rainy Day Mood",
-                url: "https://example.com/sad",
-                coverUrl: "https://via.placeholder.com/300x300.png?text=Rainy",
-            },
-        },
-        {
-            date: "2025-12-03",
-            diaryText: "오늘은 평범한 하루였다.",
-            analysis: "안정적이고 차분한 감정이 유지된 하루였습니다.",
-            keywords: ["조용하다"],
-            emotion: "neutral",
-            music: {
-                title: "Chill Evening",
-                url: "https://example.com/neutral",
-                coverUrl: "https://via.placeholder.com/300x300.png?text=Chill",
-            },
-        },
-    ];
+    const userName = localStorage.getItem("userName") || "이름";
+
+    useEffect(() => {
+        const fetchDiaries = async () => {
+            try {
+                setLoading(true);
+                setError("");
+
+                const res = await api.get("/api/diary/info", {
+                    params: { page: 0, size: 100 },
+                });
+
+                const page = res.data.data;
+                const items = page.content || [];
+
+                const mapped = items
+                    .map(normalizeDiaryFromServer)
+                    .filter((d) => d.date);
+
+                setDiaries(mapped);
+            } catch (e) {
+                console.error(e);
+                setError("일기 목록을 불러오는 중 오류가 발생했습니다.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDiaries();
+    }, []);
 
     const selectedDateKey = selectedDate
         ? selectedDate.toISOString().split("T")[0]
@@ -63,6 +102,14 @@ export default function MyPage() {
         ? diaries.find((d) => d.date === selectedDateKey)
         : null;
 
+    const periodText = (() => {
+        if (!diaries.length) return "아직 기록이 없습니다";
+        const sorted = [...diaries].sort((a, b) =>
+            a.date.localeCompare(b.date)
+        );
+        return `${sorted[0].date} ~ ${sorted[sorted.length - 1].date}`;
+    })();
+
     return (
         <div className=" w-full min-h-screen bg-gray-100 min-w-[360px] min-h-[670px]">
             < Header />
@@ -70,18 +117,24 @@ export default function MyPage() {
 
 
                 <div className="flex items-center space-x-4">
-                    <ProfileImage src="https://via.placeholder.com/150" />
+                    <ProfileImage src={Neutral} />
                     <div className="flex flex-col">
-                        <span className="text-lg font-semibold">이름</span>
-                        <span className="text-sm text-gray-600">기록한 기간</span>
+                        <span className="text-lg font-semibold">{userName}</span>
+                        <span className="text-sm text-gray-600">{periodText}</span>
                     </div>
                 </div>
 
                 <div>
-                    <SwitchButton onClick={() => setIsOn(!isOn)} />
+                    <SwitchButton onClick={() => setIsGraphMode((prev) => !prev)} />
                 </div>
 
-                {!isOn && (
+                {error && (
+                    <div className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                        {error}
+                    </div>
+                )}
+
+                {!isGraphMode && (
                     <>
                         <EmotionCalendar
                             diaries={diaries}
@@ -103,6 +156,7 @@ export default function MyPage() {
                                         analysis={selectedDiary.analysis}
                                         emotion={selectedDiary.emotion}  // "기쁨" / "슬픔" / "보통" / "화남"
                                         music={selectedDiary.music}
+                                        keywords={selectedDiary.keywords}
                                     />
                                 </motion.div>
                             ) : (
@@ -127,32 +181,28 @@ export default function MyPage() {
                 )}
 
 
-                {isOn && (
+                {isGraphMode && (
                     <AnimatePresence mode="wait">
-                        {isOn ? (
-                            <motion.div
-                                key="graph"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <EmotionGraph diaries={diaries} />
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key="field"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <MyPageField diaries={diaries} />
-                            </motion.div>
-                        )}
+                        <motion.div
+                            key="graph"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <EmotionGraph diaries={diaries} />
+                        </motion.div>
                     </AnimatePresence>
                 )}
             </div >
+
+            {loading && (
+                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-40">
+                    <div className="bg-white px-6 py-4 rounded-lg shadow text-gray-700">
+                        일기 목록을 불러오는 중입니다...
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div >

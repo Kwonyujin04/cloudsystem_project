@@ -1,10 +1,16 @@
 // frontend/src/pages/AnalysisPage/RecordPlayer.jsx
 
 const EMOTION_MAP = {
-    joy: "joy",
-    sad: "sad",
-    angry: "angry",
-    neutral: "neutral",
+    "행복": "joy",
+
+    "슬픔": "sad",
+    "공포": "sad",
+    "놀람": "sad",
+
+    "혐오": "angry",
+    "분노": "angry",
+
+    "중립": "neutral",
 };
 
 const EMOTION_GRADIENTS = {

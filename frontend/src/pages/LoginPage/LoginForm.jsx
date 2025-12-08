@@ -24,11 +24,11 @@ export default function LoginForm() {
             const token = res.data.data.token;
             localStorage.setItem("token", token);
 
-            alert("로그인 성공!");
+            alert("로그인 성공");
             window.location.href = "/mypage";
 
         } catch (err) {
-            setError("로그인 실패! 이메일 또는 비밀번호를 확인하세요.");
+            setError("로그인 실패. 이메일 또는 비밀번호를 확인하세요.");
         }
     };
 
@@ -37,7 +37,7 @@ export default function LoginForm() {
 
             {/* Title */}
             <h1 className="text-3xl font-bold text-center">Login</h1>
-            <p className="text-center text-gray-500">Welcome back to MoodTrack</p>
+            <p className="text-center text-gray-500">감성 일기 서비스에 오신걸 환영합니다. </p>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -83,6 +83,13 @@ export default function LoginForm() {
 
             {/* Links Section */}
             <div className="flex justify-between text-sm pt-2">
+                {/* 회원가입 */}
+                <button
+                    onClick={() => navigate("/signup")}
+                    className="text-gray-600 hover:text-black transition-colors duration-300"
+                >
+                    회원가입
+                </button>
 
                 {/* 아이디 찾기 */}
                 <button

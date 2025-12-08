@@ -1,7 +1,19 @@
 import EmotionDonutChart from "./EmotionDonutChart";
 
-export default function EmotionGraph({ diaries }) {
+const EMOTION_TO_KEY = {
+    "행복": "joy",
 
+    "슬픔": "sad",
+    "공포": "sad",
+    "놀람": "sad",
+
+    "혐오": "angry",
+    "분노": "angry",
+
+    "중립": "neutral",
+};
+
+export default function EmotionGraph({ diaries }) {
     const emotionCount = {
         joy: 0,
         sad: 0,
