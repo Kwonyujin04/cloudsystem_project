@@ -20,25 +20,42 @@ export default function DiaryForm() {
             return;
         }
 
-        const formattedDate = selectedDate.toISOString().split("T")[0];
-
         try {
             setLoading(true);
 
-            const res = await api.post("/api/analysis", {
-                diaryText: content,
-                date: formattedDate,
+            const res = await api.post("/api/diary/submit", {
+                content,
             });
 
             const result = res.data.data;
 
-            // ✨ AnalysisPage로 이동하면서 데이터 전달
+            let music = {
+                title: result.music.title,
+                url: "",
+                coverUrl:
+                    "https://i.scdn.co/image/ab67616d0000b273e6cfbd918066c7f684bb6a53",
+            };
+
+            if (Array.isArray(result.musicList) && result.musicList.length > 0) {
+                const m = result.musicList[0];
+                music = {
+                    title: m.trackTitle
+                        ? `${m.artist ?? ""} - ${m.trackTitle}`
+                        : "오늘의 기분에 맞는 음악",
+                    url: m.spotifyUrl ?? "",
+                    coverUrl:
+                        m.coverUrl ??
+                        "https://i.scdn.co/image/ab67616d0000b273e6cfbd918066c7f684bb6a53",
+                };
+            }
+
             navigate("/analysis", {
                 state: {
-                    diaryText: result.diaryText,
+                    diaryText: result.content,
                     analysis: result.analysis,
                     emotion: result.emotion,
-                    music: result.music,
+                    keywords: result.keywords,
+                    music,
                 },
             });
 

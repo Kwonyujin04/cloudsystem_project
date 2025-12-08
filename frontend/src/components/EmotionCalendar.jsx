@@ -5,6 +5,19 @@ import sadImg from "../assets/sad.png";
 import angryImg from "../assets/angry.png";
 import neutralImg from "../assets/neutral.png";
 
+const EMOTION_CANONICAL = {
+    "행복": "joy",
+
+    "슬픔": "sad",
+    "공포": "sad",
+    "놀람": "sad",
+
+    "혐오": "angry",
+    "분노": "angry",
+
+    "중립": "neutral",
+};
+
 const EMOTION_ICON = {
     joy: joyImg,
     sad: sadImg,
@@ -17,6 +30,13 @@ const EMOTION_BG_CLASS = {
     sad: "#c1ddf3ff",
     angry: "#faaaaaff",
     neutral: "#e1f7d6ff",
+};
+
+const EMOTION_LABEL = {
+    joy: "행복",
+    sad: "슬픔",
+    angry: "분노",
+    neutral: "중립",
 };
 
 export default function EmotionCalendar({ diaries, selectedDate, onDateSelect }) {
@@ -38,7 +58,7 @@ export default function EmotionCalendar({ diaries, selectedDate, onDateSelect })
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
     const firstDayOfMonth = new Date(year, month, 1);
-    const startWeekday = firstDayOfMonth.getDay();
+    const startWeekday = firstDayOfMonth.getDay(); // 0: 일요일
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const cells = [];
@@ -107,10 +127,17 @@ export default function EmotionCalendar({ diaries, selectedDate, onDateSelect })
 
                     const { dateObj, key, diary } = cell;
                     const isSelected = isSameDate(selectedDate, dateObj);
-                    const emotion = diary?.emotion;
-                    const colorClass = emotion
-                        ? EMOTION_BG_CLASS[emotion] || "#d1d5db"
+                    const emotionRaw = diary?.emotion; // 백엔드에서 온 원래 감정 (한국어)
+                    const emotionKey = emotionRaw ? EMOTION_CANONICAL[emotionRaw] || "neutral" : null;// 캘린더에서 쓸 대표 감정 키
+
+                    const bgColor = emotionKey
+                        ? EMOTION_BG_CLASS[emotionKey]
                         : "#f3f4f6";
+
+                    const iconSrc = emotionKey ? EMOTION_ICON[emotionKey] : null;
+                    const altLabel = emotionKey
+                        ? EMOTION_LABEL[emotionKey]
+                        : "감정";
 
                     return (
                         <button
@@ -124,14 +151,14 @@ export default function EmotionCalendar({ diaries, selectedDate, onDateSelect })
                                 {dateObj.getDate()}
                             </span>
 
-                            {diary && emotion && (
+                            {diary && emotionKey && iconSrc && (
                                 <div
                                     className="w-8 h-8 rounded-full flex items-center justify-center"
-                                    style={{ backgroundColor: EMOTION_BG_CLASS[emotion] }}
+                                    style={{ backgroundColor: bgColor }}
                                 >
                                     <img
-                                        src={EMOTION_ICON[emotion]}
-                                        alt={`${emotion} 아이콘`}
+                                        src={iconSrc}
+                                        alt={`${altLabel} 아이콘`}
                                         className="w-6 h-6 object-contain"
                                     />
                                 </div>

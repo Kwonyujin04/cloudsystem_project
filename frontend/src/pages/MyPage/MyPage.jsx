@@ -21,18 +21,29 @@ function normalizeDiaryFromServer(item) {
 
     const diaryText = item.content || ""; // Diary.content
     const analysis = item.summary || ""; // Diary.summary
-    const emotion = item.label || "neutral"; // Diary.label (감정 레이블)
-    const keywords = Array.isArray(item.keywords)
-        ? item.keywords
-        : [];
+    const emotion = item.label || "중립"; // Diary.label (감정 레이블)
+    const keywords = Array.isArray(item.keywords) ? item.keywords : [];
 
     const music = {
-        // 임시 데이터
         title: "오늘의 기분에 맞는 음악",
         url: "",
         coverUrl:
             "https://i.scdn.co/image/ab67616d0000b273e6cfbd918066c7f684bb6a53",
     };
+
+    if (Array.isArray(item.musicList) && item.musicList.length > 0) {
+        const m = item.musicList[0];
+
+        music = {
+            title: m.trackTitle
+                ? `${m.artist ?? ""} - ${m.trackTitle}`
+                : "오늘의 기분에 맞는 음악",
+            url: m.spotifyUrl ?? "",
+            coverUrl:
+                m.coverUrl ??
+                "https://i.scdn.co/image/ab67616d0000b273e6cfbd918066c7f684bb6a53",
+        };
+    }
 
     return {
         id: item.id,
