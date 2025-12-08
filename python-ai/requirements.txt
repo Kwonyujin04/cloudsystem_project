@@ -6,3 +6,5 @@ pydantic
 keybert
 tiktoken
 protobuf
+spotipy
+sentence-transformers

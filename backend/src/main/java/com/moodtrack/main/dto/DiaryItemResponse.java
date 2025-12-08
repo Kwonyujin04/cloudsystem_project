@@ -20,5 +20,9 @@ public class DiaryItemResponse {
     private Integer intensity;
     private String summary;
     private List<String> keywords;
+    private List<String>  musicTitles;
+    private List<String>  musicArtists;
+    private List<String>  musicCovers;
+    private List<String>  musicUrls;
     private LocalDateTime createdAt;
 }

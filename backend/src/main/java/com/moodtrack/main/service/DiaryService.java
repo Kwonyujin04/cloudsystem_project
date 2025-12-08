@@ -5,6 +5,7 @@ import com.moodtrack.main.dto.DiaryItemResponse;
 import com.moodtrack.main.dto.DiaryStatsResponse;
 import com.moodtrack.main.dto.DiarySubmitResponse;
 import com.moodtrack.main.entity.Diary;
+import com.moodtrack.main.entity.Music;
 import com.moodtrack.main.entity.User;
 import com.moodtrack.main.repository.DiaryRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ public class DiaryService {
     // 내 일기 전체 조회
     @Transactional(readOnly = true)
     public Page<DiaryItemResponse> getMyDiaries(User user, Pageable pageable) {
-        var diaryPage = diaryRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+        var diaryPage = diaryRepository.findByUserOrderByCreatedAtDescWithMusic(user, pageable);
 
         return diaryPage.map(diary -> DiaryItemResponse.builder()
                 .id(diary.getId())
@@ -48,6 +49,18 @@ public class DiaryService {
                 .intensity(diary.getIntensity())
                 .summary(diary.getSummary())
                 .keywords(diary.getKeywords())
+                .musicTitles(diary.getMusicList().stream()
+                        .map(Music::getTrackTitle)
+                        .collect(Collectors.toList()))
+                .musicArtists(diary.getMusicList().stream()
+                        .map(Music::getArtist)
+                        .collect(Collectors.toList()))
+                .musicCovers(diary.getMusicList().stream()
+                        .map(Music::getCoverUrl)
+                        .collect(Collectors.toList()))
+                .musicUrls(diary.getMusicList().stream()
+                        .map(Music::getSpotifyUrl)
+                        .collect(Collectors.toList()))
                 .createdAt(diary.getCreatedAt())
                 .build());
     }
@@ -112,9 +125,13 @@ public class DiaryService {
 
         // 3) 파이썬 키워드 추출 API 호출
         var keywordResult = emotionAiClient.extractKeywords(content);
-        List<String> keywords = keywordResult.getKeywords();  // 키워드 목록
+        List<String> keywords = keywordResult.getKeywords();
 
-        // 4) 일기 DB에 저장
+        // 4) 파이썬 음악 추천 API 호출
+        EmotionAiClient.MusicResponse musicResponse = emotionAiClient.recommendMusic(content);
+        List<EmotionAiClient.MusicResult> musicRecommendations = musicResponse.getRecommendations();
+
+        // 5) 일기 DB에 저장
         Diary diary = Diary.builder()
                 .user(user)
                 .content(content)
@@ -126,9 +143,37 @@ public class DiaryService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
+        List<Music> musicList = musicRecommendations.stream().map(musicRecommendation -> {
+            Music music = new Music();
+            music.setArtist(musicRecommendation.getArtist());
+            music.setTrackTitle(musicRecommendation.getTrackTitle());
+            music.setCoverUrl(musicRecommendation.getCoverUrl());
+            music.setSpotifyUrl(musicRecommendation.getSpotifyUrl());
+            music.setDiary(diary);
+            return music;
+        }).collect(Collectors.toList());
+
+        diary.setMusicList(musicList);
+
         diaryRepository.save(diary);
 
         // 5) 클라이언트에 분석 결과 + 요약 + 키워드 반환
+        List<String> musicTitles = musicRecommendations.stream()
+                .map(EmotionAiClient.MusicResult::getTrackTitle)
+                .collect(Collectors.toList());
+
+        List<String> musicArtists = musicRecommendations.stream()
+                .map(EmotionAiClient.MusicResult::getArtist)
+                .collect(Collectors.toList());
+
+        List<String> musicCovers = musicRecommendations.stream()
+                .map(EmotionAiClient.MusicResult::getCoverUrl)
+                .collect(Collectors.toList());
+
+        List<String> musicUrls = musicRecommendations.stream()
+                .map(EmotionAiClient.MusicResult::getSpotifyUrl)
+                .collect(Collectors.toList());
+
         return DiarySubmitResponse.builder()
                 .diaryId(diary.getId())
                 .label(emotionLabel)
@@ -136,6 +181,10 @@ public class DiaryService {
                 .intensity(emotionResult.getIntensity())
                 .summary(summaryText)
                 .keywords(keywords)
+                .musicTitles(musicTitles)
+                .musicArtists(musicArtists)
+                .musicCovers(musicCovers)
+                .musicUrls(musicUrls)
                 .build();
     }
 }

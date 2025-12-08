@@ -18,7 +18,7 @@ public class Diary {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 어떤 유저가 쓴 일기인지
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -47,11 +47,10 @@ public class Diary {
     @Column(name = "keyword")
     private List<String> keywords;
 
+    @Setter
+    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Music> musicList;
 
-    // 연관관계 편의 메서드
-    public void setUser(User user) {
-        this.user = user;
-    }
 
     @PrePersist
     private void onCreate() {

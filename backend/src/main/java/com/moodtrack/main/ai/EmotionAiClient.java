@@ -1,5 +1,6 @@
 package com.moodtrack.main.ai;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.moodtrack.main.error.AppException;
 import com.moodtrack.main.error.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,8 @@ public class EmotionAiClient {
     public EmotionResult analyze(String text) {
         String url = pythonUrl + "/analyze";
 
+        log.info("AI 서버에 감정 분석 요청 시작. URL: {}", url);
+
         Map<String, String> request = new HashMap<>();
         request.put("text", text);
 
@@ -38,10 +42,12 @@ public class EmotionAiClient {
             ResponseEntity<EmotionResult> response =
                     restTemplate.postForEntity(url, request, EmotionResult.class);
 
+            log.info("감정 분석 요청 성공. 결과: {}", response.getBody().getLabel());
+
             return response.getBody();
 
         } catch (Exception e) {
-            log.error("Python 감정 분석 실패", e);
+            log.error("Python 감정 분석 실패. URL: {}", url, e);
             throw new AppException(ErrorCode.HF_API_ERROR, "감정 분석 서버 호출 실패");
         }
     }
@@ -52,6 +58,8 @@ public class EmotionAiClient {
     public SummaryResult summarize(String text) {
         String url = pythonUrl + "/summarize";
 
+        log.info("AI 서버에 요약 요청 시작. URL: {}", url);
+
         Map<String, String> request = new HashMap<>();
         request.put("text", text);
 
@@ -59,10 +67,12 @@ public class EmotionAiClient {
             ResponseEntity<SummaryResult> response =
                     restTemplate.postForEntity(url, request, SummaryResult.class);
 
+            log.info("요약 요청 성공. 결과 길이: {}", response.getBody().getSummary().length());
+
             return response.getBody();
 
         } catch (Exception e) {
-            log.error("Python 요약 실패", e);
+            log.error("Python 요약 실패. URL: {}", url, e);
             throw new AppException(ErrorCode.HF_API_ERROR, "요약 서버 호출 실패");
         }
     }
@@ -73,19 +83,80 @@ public class EmotionAiClient {
     public KeywordResult extractKeywords(String text) {
         String url = pythonUrl + "/extract_keywords";
 
+        log.info("AI 서버에 키워드 추출 요청 시작. URL: {}", url);
+
         Map<String, String> request = new HashMap<>();
         request.put("text", text);
 
         try {
-            ResponseEntity<KeywordResult> response =
-                    restTemplate.postForEntity(url, request, KeywordResult.class);
+            ResponseEntity<KeywordApiResponse> response =
+                    restTemplate.postForEntity(url, request, KeywordApiResponse.class);
+
+            List<KeywordItem> keywordItems = response.getBody().getKeywords();
+
+            List<String> keywordStrings = keywordItems.stream()
+                    .map(KeywordItem::getKeyword)
+                    .toList();
+
+            KeywordResult finalResult = new KeywordResult();
+            finalResult.setKeywords(keywordStrings);
+
+            log.info("키워드 추출 요청 성공. 추출된 키워드 개수: {}", keywordStrings.size());
+
+            return finalResult;
+
+        } catch (HttpClientErrorException e) {
+            log.error("Python 키워드 추출 실패. URL: {}", url, e);
+            throw new AppException(ErrorCode.HF_API_ERROR, "키워드 추출 서버 호출 실패");
+        }
+    }
+
+    /**
+     * 노래 추천 호출 (/recommend_music)
+     */
+    public MusicResponse recommendMusic(String text) {
+        String url = pythonUrl + "/recommend_music";
+
+        log.info("AI 서버에 음악 추천 요청 시작. URL: {}", url);
+
+        Map<String, String> request = new HashMap<>();
+        request.put("text", text);
+
+        try {
+            ResponseEntity<MusicResponse> response =
+                    restTemplate.postForEntity(url, request, MusicResponse.class);
+
+            log.info("음악 추천 요청 성공. 추천된 곡 개수: {}", response.getBody().getRecommendations().size());
 
             return response.getBody();
 
         } catch (HttpClientErrorException e) {
-            log.error("Python 키워드 추출 실패", e);
-            throw new AppException(ErrorCode.HF_API_ERROR, "키워드 추출 서버 호출 실패");
+            log.error("Python 음악 추천 실패 (HTTP 에러). URL: {}", url, e);
+            throw new AppException(ErrorCode.HF_API_ERROR, "음악 추천 서버 호출 실패");
+        } catch (Exception e) {
+            log.error("Python 음악 추천 실패 (기타 에러). URL: {}", url, e);
+            throw new AppException(ErrorCode.HF_API_ERROR, "음악 추천 서버 호출 실패");
         }
+    }
+
+    @Data
+    public static class MusicResult {
+        private String artist;
+
+        @JsonProperty("track_title")
+        private String trackTitle;
+
+        @JsonProperty("cover_url")
+        private String coverUrl;
+
+        @JsonProperty("spotify_url")
+        private String spotifyUrl;
+    }
+
+    @Data
+    public static class MusicResponse {
+        private String emotionSeed;
+        private List<MusicResult> recommendations;
     }
 
     @Data
@@ -102,6 +173,17 @@ public class EmotionAiClient {
 
     @Data
     public static class KeywordResult {
-        private List<String> keywords;  // 추출된 키워드 목록
+        private List<String> keywords;
+    }
+
+    @Data
+    public static class KeywordApiResponse {
+        private List<KeywordItem> keywords;
+    }
+
+    @Data
+    public static class KeywordItem {
+        private String keyword;
+        private double relevanceScore;
     }
 }

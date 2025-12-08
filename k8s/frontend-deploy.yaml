@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: react-frontend
-  namespace: frontend
+  namespace: moodtracker
 spec:
   replicas: 1
   selector:
@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: react-frontend
-          image: react-frontend:latest
-          imagePullPolicy: Never
+          image: kwonyujin04/cloud_frontend:12.04.tue
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
 ---
@@ -25,7 +25,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: react-frontend
-  namespace: frontend
+  namespace: moodtracker
 spec:
   selector:
     app: react-frontend
