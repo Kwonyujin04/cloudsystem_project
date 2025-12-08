@@ -24,23 +24,17 @@ function normalizeDiaryFromServer(item) {
     const emotion = item.label || "중립"; // Diary.label (감정 레이블)
     const keywords = Array.isArray(item.keywords) ? item.keywords : [];
 
-    const music = {
+    let music = {
         title: "오늘의 기분에 맞는 음악",
         url: "",
-        coverUrl:
-            "https://i.scdn.co/image/ab67616d0000b273e6cfbd918066c7f684bb6a53",
+        coverUrl: "https://i.scdn.co/image/ab67616d0000b273e6cfbd918066c7f684bb6a53",
     };
 
-    if (Array.isArray(item.musicList) && item.musicList.length > 0) {
-        const m = item.musicList[0];
-
+    if (Array.isArray(item.musicTitles) && item.musicTitles.length > 0) {
         music = {
-            title: m.trackTitle
-                ? `${m.artist ?? ""} - ${m.trackTitle}`
-                : "오늘의 기분에 맞는 음악",
-            url: m.spotifyUrl ?? "",
-            coverUrl:
-                m.coverUrl ??
+            title: `${item.musicArtists[0]} - ${item.musicTitles[0]}`,
+            url: item.musicUrls?.[0] ?? "",
+            coverUrl: item.musicCovers?.[0] ??
                 "https://i.scdn.co/image/ab67616d0000b273e6cfbd918066c7f684bb6a53",
         };
     }
