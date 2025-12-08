@@ -53,6 +53,7 @@ public class UserService {
         if (!ok) throw new AppException(ErrorCode.INVALID_PASSWORD);
 
         return LoginResponse.builder()
+                .username(user.getUsername())
                 .build();
     }
 }
