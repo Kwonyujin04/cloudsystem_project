@@ -5,7 +5,7 @@ import api from "../../utils/axiosInstance";
 import { useNavigate } from "react-router-dom";
 
 export default function SignupForm() {
-    const [name, setName] = useState("");
+    const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -23,8 +23,8 @@ export default function SignupForm() {
         }
 
         try {
-            await api.post("../../../../backend/src/java/com/moodtrack/main/controller/AuthController.java", {
-                name,
+            await api.post("/api/auth/signup", {
+                username,
                 email,
                 password,
             });
@@ -52,8 +52,8 @@ export default function SignupForm() {
                     <label className="block text-sm font-medium py-2">이름</label>
                     <input
                         type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                         className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black/40"
                         placeholder="이름을 입력하세요"
                         required
