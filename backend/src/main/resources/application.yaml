@@ -11,6 +11,8 @@ jwt:
 ---
 # 로컬
 spring:
+  jackson:
+    time-zone: Asia/Seoul
   config:
     activate:
       on-profile: local
@@ -41,6 +43,8 @@ python:
 ---
 # K8s
 spring:
+  jackson:
+    time-zone: Asia/Seoul
   config:
     activate:
       on-profile: k8s
