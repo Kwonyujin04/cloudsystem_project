@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/api/diary")
 @RequiredArgsConstructor
@@ -72,6 +74,7 @@ public class DiaryController {
         // 현재 요청의 유저 찾기
         User user = getCurrentUser();
         String content = req.getContent();
-        return diaryService.submitDiary(user, content);
+        LocalDate date = req.getSelectedDate();
+        return diaryService.submitDiary(user, content, date);
     }
 }

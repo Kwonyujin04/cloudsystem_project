@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -113,7 +114,7 @@ public class DiaryService {
 
     // 감정 분석 및 요약 후 일기 제출
     @Transactional
-    public DiarySubmitResponse submitDiary(User user, String content) {
+    public DiarySubmitResponse submitDiary(User user, String content, LocalDate date) {
 
         // 1) 파이썬 감정 분석 API 호출
         var emotionResult = emotionAiClient.analyze(content);
@@ -140,7 +141,7 @@ public class DiaryService {
                 .score(emotionResult.getScore())
                 .intensity(emotionResult.getIntensity())
                 .keywords(keywords)
-                .createdAt(OffsetDateTime.now(ZoneId.of("Asia/Seoul")))
+                .createdAt(date)
                 .build();
 
         List<Music> musicList = musicRecommendations.stream().map(musicRecommendation -> {
