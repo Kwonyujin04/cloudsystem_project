@@ -39,7 +39,7 @@ const EMOTION_LABEL = {
     neutral: "중립",
 };
 
-export default function EmotionCalendar({ diaries, selectedDate, onDateSelect }) {
+export default function EmotionCalendar({ diaries, selectedDate, onDateSelect, onMonthChange }) {
     const [currentMonth, setCurrentMonth] = useState(() => selectedDate || new Date());
 
     useEffect(() => {
@@ -64,9 +64,16 @@ export default function EmotionCalendar({ diaries, selectedDate, onDateSelect })
     const cells = [];
     for (let i = 0; i < startWeekday; i++) cells.push(null);
     for (let day = 1; day <= daysInMonth; day++) {
-        const dateObj = new Date(year, month, day);
-        const key = dateObj.toISOString().split("T")[0];
+        const dateObj = new Date(Date.UTC(year, month, day));
+
+        const key = [
+            dateObj.getUTCFullYear(),
+            String(dateObj.getUTCMonth() + 1).padStart(2, "0"),
+            String(dateObj.getUTCDate()).padStart(2, "0")
+        ].join("-");
+
         const diary = diaryByDate[key] || null;
+
         cells.push({ dateObj, key, diary });
     }
     while (cells.length % 7 !== 0) cells.push(null);
@@ -76,15 +83,22 @@ export default function EmotionCalendar({ diaries, selectedDate, onDateSelect })
     const isSameDate = (d1, d2) => {
         if (!d1 || !d2) return false;
         return (
-            d1.getFullYear() === d2.getFullYear() &&
-            d1.getMonth() === d2.getMonth() &&
-            d1.getDate() === d2.getDate()
+            d1.getUTCFullYear() === d2.getUTCFullYear() &&
+            d1.getUTCMonth() === d2.getUTCMonth() &&
+            d1.getUTCDate() === d2.getUTCDate()
         );
     };
 
     const handleMoveMonth = (offset) => {
         setCurrentMonth(
-            (prev) => new Date(prev.getFullYear(), prev.getMonth() + offset, 1)
+            (prev) => {
+                const newMonth = new Date(prev.getFullYear(), prev.getMonth() + offset, 1);
+                setCurrentMonth(newMonth);
+                if (onMonthChange) {
+                    onMonthChange(newMonth);
+                }
+                return newMonth;
+            }
         );
     };
 
