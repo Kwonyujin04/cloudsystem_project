@@ -22,9 +22,9 @@ export default function EmotionGraph({ diaries }) {
     };
 
     diaries.forEach(diary => {
-        if (emotionCount[diary.emotion] !== undefined) {
-            emotionCount[diary.emotion]++;
-        }
+        const raw = diary.emotion;
+        const key = EMOTION_TO_KEY[raw] ?? "neutral";
+        emotionCount[key]++;
     });
 
     const data = [

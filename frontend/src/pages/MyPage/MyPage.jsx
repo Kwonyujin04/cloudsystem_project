@@ -15,9 +15,13 @@ import "react-datepicker/dist/react-datepicker.css";
 import api from "../../utils/axiosInstance";
 
 function normalizeDiaryFromServer(item) {
-    const date = item.createdAt
-        ? String(item.createdAt).split("T")[0]
-        : "";
+    const dateObj = new Date(item.createdAt);
+
+    const date = [
+        dateObj.getFullYear(),
+        String(dateObj.getMonth() + 1).padStart(2, "0"),
+        String(dateObj.getDate()).padStart(2, "0")
+    ].join("-");
 
     const diaryText = item.content || ""; // Diary.content
     const analysis = item.summary || ""; // Diary.summary
@@ -56,6 +60,7 @@ export default function MyPage() {
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [viewMonth, setViewMonth] = useState(new Date());
 
     const userName = localStorage.getItem("userName") || "이름";
 
@@ -87,6 +92,18 @@ export default function MyPage() {
 
         fetchDiaries();
     }, []);
+
+    const viewYear = viewMonth.getFullYear();
+    const viewMonthIndex = viewMonth.getMonth() + 1;
+
+    const graphDiaries = diaries.filter(diary => {
+        const diaryDate = diary.date;
+
+        const diaryYear = parseInt(diaryDate.substring(0, 4));
+        const diaryMonth = parseInt(diaryDate.substring(5, 7));
+
+        return diaryYear === viewYear && diaryMonth === viewMonthIndex;
+    });
 
     const selectedDateKey = selectedDate
         ? selectedDate.toISOString().split("T")[0]
@@ -134,6 +151,7 @@ export default function MyPage() {
                             diaries={diaries}
                             selectedDate={selectedDate}
                             onDateSelect={setSelectedDate}
+                            onMonthChange={setViewMonth}
                         />
 
                         <AnimatePresence mode="wait">
@@ -184,7 +202,7 @@ export default function MyPage() {
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.3 }}
                         >
-                            <EmotionGraph diaries={diaries} />
+                            <EmotionGraph diaries={graphDiaries} />
                         </motion.div>
                     </AnimatePresence>
                 )}
