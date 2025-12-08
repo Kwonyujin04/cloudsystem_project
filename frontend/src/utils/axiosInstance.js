@@ -8,6 +8,10 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
+    if (config.url.includes("/api/auth/login") || config.url.includes("/api/auth/signup")) {
+        return config;
+    }
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
